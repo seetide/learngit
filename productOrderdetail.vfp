@@ -1,0 +1,447 @@
+<apex:page standardController="NRProduct__c" extensions="ProductOrderDetailController"  showheader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" >
+    <apex:composition template="BootstrapTemplate">
+        <apex:define name="head">
+            <title>OrderDetails</title>
+            <style>
+                #sticky {
+                padding: 0.5ex;               
+                background-color: #FAFAFA;              
+                }
+                #sticky.stick {
+                position: fixed;
+                top: 0;               
+                }            
+            </style>
+            <!-- SweetAlert2-->
+            <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.5/sweetalert2.min.js"/>
+            <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.5/sweetalert2.min.css"/>
+        </apex:define>
+        <apex:define name="body">
+            <apex:form style="padding:2em;"> 
+                <!--message-->
+                <apex:outputPanel id="Message" styleClass="message-box">
+                    <apex:outputPanel styleClass="alert alert-{!MessageClass}" layout="block" rendered="{!Message != null}">
+                        {!Message}
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <!--action functions-->
+                <apex:actionFunction action="{!PopulateOrderDetail}" name="passvalue" reRender="OrdersPanel" status="BootstrapStatus">
+                    <apex:param assignTo="{!SelectedRecordtype}" name="SelectedRecordtype"  value=""/>
+                </apex:actionFunction>
+                <!--Page Content-->
+                <div id="PageContent">                
+                    <apex:outputLink target="_blank" styleClass="btn btn-info" style="margin-bottom:10px;" rendered="{!IF($CurrentPage.parameters.h = '1', 'false', 'true')}" 
+                                     value="{!$Page.ProductOrderDetails}?Id={!NRProduct__c.Id}&h=1&core.apexpages.request.devconsole=1">
+                        Pop-Out 
+                        <i class="fa fa-external-link"/>
+                    </apex:outputLink>
+                    <div class="row">
+                        <div class="panel with-nav-tabs panel-primary">
+                            <div class="panel-heading panel-heading-lg">
+                                <ul class="nav nav-tabs">
+                                    <apex:repeat value="{!RecordTypeNames}" var="rt">
+                                        <li>
+                                            <a href="#" data-toggle="tab" onclick="passvalue('{!rt}');">{!RecordTypeNamesMap[rt]}</a>
+                                        </li>
+                                    </apex:repeat>
+                                </ul>
+                            </div>
+                            <div class="panel-body">
+                                <div class="tab-content">
+                                    <div class="tab-pane fade in active">
+                                        <apex:outputPanel id="mainPanel">
+                                            <apex:outputPanel id="OrdersPanel" layout="block" styleClass="col-sm-{!IF(SelectedOrderDetail.Name != null, '7', '12')}">
+                                                <table Id="OrderTable" class="table table-bordered">
+                                                    <thead>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Purchase Order','', 'hidden')} ">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Outbound Shipment Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SentToAMZ</th>
+                                                            <th> ReceivedAtAMZ</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Issue','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> Issue Reason</th>
+                                                            <th> Qty</th>
+                                                        </tr> 
+                                                        <tr class="{!IF(SelectedRecordtype == 'Extra','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Missing Credit','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Rework Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Removal Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Merchant Buyout Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Donation Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Work Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Destruction Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Vendor Return Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                           <!-- <th> Reason </th> -->
+                                                        </tr>
+                                                        <tr class="{!IF(SelectedRecordtype == 'Return Order','', 'hidden')}">
+                                                            <th>Related</th>
+                                                            <th> Name</th>
+                                                            <th> Status</th>
+                                                            <th> Requested</th>
+                                                            <th> Order</th>
+                                                            <th> SendToNR</th>
+                                                            <th> Received</th>
+                                                          <!-- <th> Reason </th> -->
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody> 
+                                                        <apex:repeat value="{!Details}" var="od">
+                                                            <tr class="{!IF(SelectedRecordtype == 'Purchase Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                     <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                    
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Outbound Shipment Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToAmazon}</td>
+                                                                <td>{!od.QtyReceivedAtAmazon}</td>                                               
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Issue','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.IssueReason}</td>
+                                                                <td>{!od.QtyIssue}</td>                                               
+                                                            </tr> 
+                                                            <tr class="{!IF(SelectedRecordtype == 'Extra','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Missing Credit','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Rework Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Removal Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Merchant Buyout Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Donation Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Work Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Destruction Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>                                              
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Vendor Return Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>  
+                                                                <!--  <td>{!od.Reason}</td> -->
+                                                            </tr>
+                                                            <tr class="{!IF(SelectedRecordtype == 'Return Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
+                                                                <td>
+                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                        <i class="fa fa-list" ></i>                                                                  
+                                                                        <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                <td>{!od.Status}</td>
+                                                                <td>{!od.QtyRequested}</td>
+                                                                <td>{!od.QtyOrdered}</td>
+                                                                <td>{!od.QtySentToNR}</td>
+                                                                <td>{!od.QtyReceivedAtNR}</td>      
+                                                              <!--  <td>{!od.Reason}</td> -->
+                                                            </tr>
+                                                        </apex:repeat>
+                                                    </tbody>
+                                                </table>
+                                                <script>
+                                                LoadTable('OrderTable', {
+                                                    select: true
+                                                });
+                                                </script>             
+                                            </apex:outputPanel> 
+                                            <apex:outputPanel layout="block" styleClass="{!IF(SelectedOrderDetail.Name != null, 'col-sm-5', 'hidden')}"> 
+                                                <div id="sticky-anchor" class="text-align:center;" > 
+                                                    <div id="sticky">
+                                                        <table Id="RelatedOrderDetailTable" class="table table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th> Name</th>
+                                                                    <th> Status</th>
+                                                                    <th> Requested</th>
+                                                                    <th> Order</th>
+                                                                    <th> SendToNR</th>
+                                                                    <th> Received</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody> 
+                                                                <apex:repeat value="{!SelectedOrderDetail.RelatedOrderDetails__r}" var="od">
+                                                                    <tr>
+                                                                        <td><a href="/{!od.Id}" target="_blank">{!od.Name}</a></td>
+                                                                        <td>{!od.Order__r.Status__c}</td>
+                                                                        <td>{!od.QtyRequested__c}</td>
+                                                                        <td>{!od.QtyOrdered__c}</td>
+                                                                        <td>{!od.QtySentToNR__c}</td>
+                                                                        <td>{!od.QtyReceivedAtNR__c}</td>
+                                                                    </tr>
+                                                                </apex:repeat>
+                                                            </tbody>
+                                                        </table>
+                                                        <script>
+                                                        LoadTable('RelatedOrderDetailTable');
+                                                        </script>  
+                                                    </div>
+                                                </div> 
+                                                <!--relocate-->
+                                                <script>
+                                                    sticky_relocate();
+                                                </script>
+                                            </apex:outputPanel> 
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </apex:form>
+    </apex:define>
+    <apex:define name="end">
+        <script>
+        //set focus
+        function Select(id){
+            $("input[id$='"+id+"']").focus();
+        }
+        
+        //float on the right
+        function sticky_relocate() {
+            var window_top = $(window).scrollTop();
+            var div_top = $('#sticky-anchor').offset().top;
+            var w = $('#sticky-anchor').width();
+            if (window_top > div_top) {
+                $('#sticky').addClass('stick');
+                $('#sticky').css('width', w);
+            } else {
+                $('#sticky').removeClass('stick');
+            }
+        }                                
+        $(function () { $(window).scroll(sticky_relocate); sticky_relocate();});
+        //   
+        
+        //Sweet alert       
+        function openMessage(){swal({title: 'Loading Related Details...', text:'Please be patient!', type: 'info', showConfirmButton: false})}
+        
+        </script>
+        </apex:define>
+</apex:composition>
+</apex:page>
