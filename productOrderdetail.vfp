@@ -160,7 +160,7 @@
                                                             <th> Order</th>
                                                             <th> SendToNR</th>
                                                             <th> Received</th>
-                                                           <!-- <th> Reason </th> -->
+                                                            <!-- <th> Reason </th> -->
                                                         </tr>
                                                         <tr class="{!IF(SelectedRecordtype == 'Return Order','', 'hidden')}">
                                                             <th>Related</th>
@@ -170,14 +170,14 @@
                                                             <th> Order</th>
                                                             <th> SendToNR</th>
                                                             <th> Received</th>
-                                                          <!-- <th> Reason </th> -->
+                                                            <!-- <th> Reason </th> -->
                                                         </tr>
                                                     </thead>
                                                     <tbody> 
                                                         <apex:repeat value="{!Details}" var="od">
                                                             <tr class="{!IF(SelectedRecordtype == 'Purchase Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                     <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
                                                                                       onclick="openMessage();" oncomplete="swal.close();"
                                                                                       reRender="mainPanel, Message">                                    
                                                                         <i class="fa fa-list" ></i>                                                                  
@@ -193,7 +193,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Outbound Shipment Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -207,7 +209,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Issue','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -221,7 +225,9 @@
                                                             </tr> 
                                                             <tr class="{!IF(SelectedRecordtype == 'Extra','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -235,7 +241,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Missing Credit','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -249,7 +257,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Rework Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -263,7 +273,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Removal Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -277,7 +289,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Merchant Buyout Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -291,7 +305,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Donation Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -305,7 +321,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Work Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -319,7 +337,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Destruction Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -333,7 +353,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Vendor Return Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -348,7 +370,9 @@
                                                             </tr>
                                                             <tr class="{!IF(SelectedRecordtype == 'Return Order','', 'hidden')} {!IF(SelectedOrderDetail.Name != null && SelectedOrderDetail.Name == od.Name, 'selected', '')}">
                                                                 <td>
-                                                                    <apex:commandLink styleClass="btn btn-info btn-sm btn-sm" action="{!PopulateSelectedOrderDetail}" reRender="mainPanel,Message" >                               
+                                                                    <apex:commandLink styleClass="btn btn-default btn-sm" action="{!PopulateSelectedOrderDetail}"
+                                                                                      onclick="openMessage();" oncomplete="swal.close();"
+                                                                                      reRender="mainPanel, Message">                                 
                                                                         <i class="fa fa-list" ></i>                                                                  
                                                                         <apex:param assignTo="{!SelectedDetailId}" name="SelectedDetailId" value="{!od.Id}"/>
                                                                     </apex:commandLink>
@@ -359,7 +383,7 @@
                                                                 <td>{!od.QtyOrdered}</td>
                                                                 <td>{!od.QtySentToNR}</td>
                                                                 <td>{!od.QtyReceivedAtNR}</td>      
-                                                              <!--  <td>{!od.Reason}</td> -->
+                                                                <!--  <td>{!od.Reason}</td> -->
                                                             </tr>
                                                         </apex:repeat>
                                                     </tbody>
@@ -404,7 +428,7 @@
                                                 </div> 
                                                 <!--relocate-->
                                                 <script>
-                                                    sticky_relocate();
+                                                sticky_relocate();
                                                 </script>
                                             </apex:outputPanel> 
                                         </apex:outputPanel>
@@ -414,34 +438,34 @@
                         </div>
                     </div>
                 </div>
-        </apex:form>
-    </apex:define>
-    <apex:define name="end">
-        <script>
-        //set focus
-        function Select(id){
-            $("input[id$='"+id+"']").focus();
-        }
-        
-        //float on the right
-        function sticky_relocate() {
-            var window_top = $(window).scrollTop();
-            var div_top = $('#sticky-anchor').offset().top;
-            var w = $('#sticky-anchor').width();
-            if (window_top > div_top) {
-                $('#sticky').addClass('stick');
-                $('#sticky').css('width', w);
-            } else {
-                $('#sticky').removeClass('stick');
-            }
-        }                                
-        $(function () { $(window).scroll(sticky_relocate); sticky_relocate();});
-        //   
-        
-        //Sweet alert       
-        function openMessage(){swal({title: 'Loading Related Details...', text:'Please be patient!', type: 'info', showConfirmButton: false})}
-        
-        </script>
+            </apex:form>
         </apex:define>
-</apex:composition>
+        <apex:define name="end">
+            <script>
+            //set focus
+            function Select(id){
+                $("input[id$='"+id+"']").focus();
+            }
+            
+            //float on the right
+            function sticky_relocate() {
+                var window_top = $(window).scrollTop();
+                var div_top = $('#sticky-anchor').offset().top;
+                var w = $('#sticky-anchor').width();
+                if (window_top > div_top) {
+                    $('#sticky').addClass('stick');
+                    $('#sticky').css('width', w);
+                } else {
+                    $('#sticky').removeClass('stick');
+                }
+            }                                
+            $(function () { $(window).scroll(sticky_relocate); sticky_relocate();});
+            //   
+            
+            //Sweet alert       
+            function openMessage(){swal({title: 'Loading Related Details...', text:'Please be patient!', type: 'info', showConfirmButton: false})}
+            
+            </script>
+        </apex:define>
+    </apex:composition>
 </apex:page>
