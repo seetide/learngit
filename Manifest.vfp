@@ -1,0 +1,109 @@
+<apex:page standardController="Container__c" extensions="HaitaoManifestController" showheader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" >
+    <apex:composition template="BootstrapTemplate">
+        <apex:define name="head">            
+            <style>
+                
+            </style>
+        </apex:define>
+        <apex:define name="body">
+            <apex:form id="TheForm" styleClass="container-fluid">
+                <apex:outputPanel id="MainPanel"> 
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td>
+                                        Total Pallets  
+                                    </td>
+                                    <td>
+                                        {!TotalPallets}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Total Units   
+                                    </td>
+                                    <td>
+                                        {!TotalUnits}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Mixed POs  
+                                    </td>
+                                    <td>
+                                        {!MixedPOs}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Total Cartons  
+                                    </td>
+                                    <td>
+                                        {!TotalCartons}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Total Weight 
+                                    </td>
+                                    <td>
+                                        {!TotalWeight}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group" style="font-size:18px;">
+                                <label>Tracking No: </label>                                
+                                {!Order.BOLTracking__c}                                                          
+                            </div>  
+                        </div>
+                        <div class="col-sm-4"></div>
+                    </div>
+                                        
+                    <table class="table table-bordered" id="TasksTable">
+                        <thead>
+                            <tr> 
+                                <th>Order No</th> 
+                                <th>FBA No</th>
+                                <th>Amazon Ref Id</th> 
+                                <th>Handling Type</th>
+                                <th>Pallet count</th>
+                                <th>Carton Count</th>
+                                <th>Unit Count</th>
+                                <th>Ship. Weight</th>
+                                <th>Pallet weight</th>
+                                <th>Mixed Skid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!BOLDetails}" var="b">
+                                <tr> 
+                                    <td><a href="/{!b.OrderId}" target="_blank"> {!b.OrderNo}</a></td>  <!--Add link for Order-->
+                                    <td><a href="/" target="_blank">{!b.FBANo}</a></td>
+                                    <td>{!b.AmzRefId}</td>                                                                
+                                    <td>{!b.HandlingType}</td> 
+                                    <td>{!b.PalletCount}</td>
+                                    <td>{!b.CartonCount}</td>                                                                   
+                                    <td>{!b.UnitCount}</td>
+                                    <td>{!b.ShipWeight}</td>
+                                    <td>{!b.PalletWeight}</td>
+                                    <td>{!b.MixedSkid}</td>
+                                </tr>                                                           
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    <script>
+                    LoadTable('TasksTable'); 
+                    </script> 
+                </apex:outputPanel> 
+            </apex:form> 
+        </apex:define>
+        <apex:define name="end">
+            <script> 
+
+            </script>
+        </apex:define>
+    </apex:composition>
+</apex:page>
