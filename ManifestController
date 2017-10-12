@@ -1,0 +1,335 @@
+public class ManifestController {
+    public Id ManifestId {get;set;}
+    public ManifestController(ApexPages.StandardController std){
+        ManifestId = std.getId();
+    }
+    
+    public List<BOL> BOLDetails{
+        get{
+            if(BOLDetails == null){
+                PopulateBOL();
+            }
+            
+            return BOLDetails;
+        }
+        set;
+    }
+    
+    public Integer TotalPallets {get;set;}
+    public Integer TotalUnits {get;set;}
+    public Integer MixedPOs {get;set;}
+    public Integer TotalCartons {get;set;}
+    public Decimal TotalWeight {get;set;}
+    public Order__c Order {get;set;}
+    
+    public void PopulateBOL(){
+        BOLDetails =  new List<BOL>();
+        
+        TotalPallets = 0;
+        TotalUnits = 0;
+        MixedPOs = 0;
+        TotalCartons = 0;
+        TotalWeight = 0;
+        Set<String> mixedSize = new Set<String>();
+            
+        //get the OSO ids first
+        Id orderId;
+        Map<String, String> mixedSkid = new Map<String, String> ();
+      
+        //Flag = FFP Pallet will hold a single FFP Shipment per pallet 
+        //Flag = Mixed FFP Pallet will hold multiple FFP Shipments
+        //Flag = Std Pallet will hold only STD Shipment  
+        //Flag = Mixed Std with hold multiple NON FFP shipments 
+        
+        Map<String, List<Container__c>> thirdLevelFFPContainersMap = new Map<String, List<Container__c>>();
+        Map<String, List<Container__c>> subContainersMap =  new Map<String, List<Container__c>>();
+        
+        //first level
+         Map<String, Container__c> containersMap =  
+                new Map<String, Container__c>(
+                    [SELECT Plate__c,Weight__c, Order__c, Order__r.OrderNumber__c, Order__r.ShipmentId__c, Order__r.AmazonRefId__c, 
+                     TotalContentsQty__c, Flags__c, TotalSubContainers__c
+                     FROM Container__c
+                     WHERE ParentContainer__c = :ManifestId 
+                     AND Flags__c INCLUDES('Pallet','FFP Pallet', 'Mixed FFP Pallet', 'Std Pallet', 'Mixed Std Pallet' )
+                     ORDER BY ParentContainer__c]
+                );
+         
+        //second level
+        for(Container__c sub :  [SELECT Plate__c, ParentContainer__r.Plate__c, Order__c,Order__r.OrderNumber__c, Order__r.ShipmentId__c, Order__r.AmazonRefId__c,
+                                 Weight__c,TotalContentsQty__c 
+                                 FROM Container__c 
+                                 WHERE ParentContainer__c IN :containersMap.keySet() 
+                                 ORDER BY ParentContainer__r.Plate__c])
+        {
+            if(!subContainersMap.containsKey(sub.ParentContainer__r.Plate__c)){
+                subContainersMap.put(sub.ParentContainer__r.Plate__c, new List<Container__c>());
+            }
+            subContainersMap.get(sub.ParentContainer__r.Plate__c).add(sub);
+            
+            if(!thirdLevelFFPContainersMap.containsKey(sub.Plate__c)){
+                thirdLevelFFPContainersMap.put(sub.Plate__c, new List<Container__c>());
+            }
+        }
+        
+        //third level > to get the FFP boxes
+        if(!thirdLevelFFPContainersMap.isEmpty()){
+            for(Container__c c : [SELECT Plate__c, ParentContainer__r.Plate__c, Order__c,Order__r.OrderNumber__c, Order__r.ShipmentId__c, Order__r.AmazonRefId__c,
+                                  Weight__c,TotalContentsQty__c
+                                  FROM Container__c 
+                                  WHERE ParentContainer__r.Plate__c = :thirdLevelFFPContainersMap.keySet() 
+                                  AND Order__r.Flags__c INCLUDES('FFP')
+                                  AND TotalContentsQty__c > 0
+                                  ORDER BY ParentContainer__r.Plate__c])
+            {
+                thirdLevelFFPContainersMap.get(c.ParentContainer__r.Plate__c).add(c); 
+            }
+        }
+        
+        for(Container__c c : containersMap.values()){
+            //get first orderId in order to set the ship info
+            if(String.isBlank(orderId)) orderId = c.Order__c;
+            
+            Integer pallets = 0;
+            Integer cartons = 0;
+            Integer units = 0;
+            Decimal boxesWeight = 0;
+            Decimal palletWeight = 0;
+            String mixed = '';
+            
+            if(!mixedSkid.containsKey(c.Plate__c)){
+                mixedSkid.put(c.Plate__c, null); //initialize for all pallets(level 1)
+            }
+            
+            //the first 3 should not be used but is here so users can reference to legacy manifests :: DO NOT DELETE
+            if( H.Includes(c.Flags__c, 'Pallet') && c.Order__c != null ){ 
+                pallets = 1; 
+                palletWeight = H.D(c.Weight__c);
+                //send level
+                for(Container__c child : subContainersMap.get(c.Plate__c)){ 
+                    cartons +=1;
+                    units += h.I(child.TotalContentsQty__c);
+                }
+                
+                //pass to model
+                BOLDetails.add( 
+                    new BOL( c.Order__r.OrderNumber__c, c.Order__r.ShipmentId__c, c.Order__r.AmazonRefId__c, 'Pallet', 
+                            pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                ); 
+            }
+            else if( H.Includes(c.Flags__c, 'Pallet') && c.Order__c == null ){ //mixed skid
+               h.log('inside legacy mixed pallet: '+ c.Plate__c , 109);
+                //send level
+                for(Container__c child : subContainersMap.get(c.Plate__c) ){
+                    //set order from child container
+                    if(String.isBlank(orderId)) orderId = child.Order__c;
+                    
+                    cartons = 1;
+                    units = h.I(child.TotalContentsQty__c);
+                    boxesWeight = H.D(child.Weight__c);
+                    mixed = child.ParentContainer__r.Plate__c;
+                    
+                    if(IsInModel(child.Order__r.ShipmentId__c)){
+                        for(BOL b : BOLDetails){
+                            if(b.FBANo == child.Order__r.ShipmentId__c){
+                                b.CartonCount += cartons;
+                                b.UnitCount += units;
+                                b.ShipWeight += boxesWeight;
+                                
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        //pass to model
+                        BOLDetails.add( 
+                            new BOL( child.Order__r.OrderNumber__c, child.Order__r.ShipmentId__c, child.Order__r.AmazonRefId__c, 'Box', 
+                                    pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                        );   
+                    }
+                } 
+            }
+            else if( H.Includes(c.Flags__c, 'FFP Pallet') && c.Order__c != null && h.I(c.TotalContentsQty__c) > 0){  
+               h.log('inside legacy FFP Pallet: '+ c.Plate__c , 141);
+                pallets = 1; 
+                palletWeight = H.D(c.Weight__c);
+                cartons = h.I(c.TotalContentsQty__c);
+                units = h.I(c.TotalContentsQty__c);
+                
+                //pass to model
+                BOLDetails.add( 
+                    new BOL( c.Order__r.OrderNumber__c, c.Order__r.ShipmentId__c, c.Order__r.AmazonRefId__c, 'Pallet', 
+                            pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                ); 
+            }
+            //Standard shipments
+            else if( H.Includes(c.Flags__c, 'STD Pallet') && c.Order__c != null ){ 
+                 h.log('Inside Std Pallet: ' + c.Plate__c , 155);
+                pallets = 1; 
+                palletWeight = H.D(c.Weight__c);
+                //send level
+                for(Container__c child : subContainersMap.get(c.Plate__c) ){ 
+                    cartons +=1;
+                    units += h.I(child.TotalContentsQty__c);
+                }
+                
+                //pass to model
+                BOLDetails.add( 
+                    new BOL( c.Order__r.OrderNumber__c, c.Order__r.ShipmentId__c, c.Order__r.AmazonRefId__c, 'Pallet', 
+                            pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                ); 
+            }
+            //Mixed STD Shipments
+            else if( H.Includes(c.Flags__c, 'Mixed STD Pallet') && c.Order__c == null ){
+                h.log('Inside Mixed Std Pallet: ' + c.Plate__c , 172);
+                //send level
+                for(Container__c child : subContainersMap.get(c.Plate__c)){
+                    //set order from child container
+                    if(String.isBlank(orderId)) orderId = child.Order__c;
+                    
+                    cartons = 1;
+                    units = h.I(child.TotalContentsQty__c);
+                    boxesWeight = H.D(child.Weight__c);
+                    mixed = child.ParentContainer__r.Plate__c;
+                    
+                    if(IsInModel(child.Order__r.ShipmentId__c)){
+                        for(BOL b : BOLDetails){
+                            if(b.FBANo == child.Order__r.ShipmentId__c){
+                                b.CartonCount += cartons;
+                                b.UnitCount += units;
+                                b.ShipWeight += boxesWeight;
+                                
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        //pass to model
+                        BOLDetails.add( 
+                            new BOL( child.Order__r.OrderNumber__c, child.Order__r.ShipmentId__c, child.Order__r.AmazonRefId__c, 'Box', 
+                                    pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                        );   
+                    }
+                } 
+            }
+            //full FFP Shipment pallet
+            else if( H.Includes(c.Flags__c, 'FFP Pallet') && c.Order__c != null && h.I(c.TotalContentsQty__c) == 0){  
+                h.log('inside FFP Pallet: ' + c.Plate__c, 205);
+                pallets = 1; 
+                palletWeight = H.D(c.Weight__c);
+                
+                for(Container__c child : subContainersMap.get(c.Plate__c)){ 
+                    cartons += 1;
+                    units  += 1;
+                } 
+                
+                //pass to model
+                BOLDetails.add( 
+                    new BOL( c.Order__r.OrderNumber__c, c.Order__r.ShipmentId__c, c.Order__r.AmazonRefId__c, 'Pallet', 
+                            pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                ); 
+            }
+            //Mixed FFP pallet
+            else if( H.Includes(c.Flags__c, 'Mixed FFP Pallet') && c.Order__c == null ){  
+                h.log('Inside Mixed FFP Pallet: ' + c.Plate__c , 224);
+                //send level
+                for(Container__c child : subContainersMap.get(c.Plate__c)){
+                    //set order from child container
+                    if(String.isBlank(orderId)) orderId = child.Order__c;
+                    boxesWeight += H.D(child.Weight__c);
+                    cartons = 0;
+                    units = 0;
+                    for(Container__c ffpBoxes : thirdLevelFFPContainersMap.get(child.Plate__c)){
+                       h.log('Inside ffpBoxes: ' + ffpBoxes, 233);
+                        cartons += 1;
+                        units += 1; 
+                    }
+                   
+                    mixed = child.ParentContainer__r.Plate__c;
+                    
+                    if(IsInModel(child.Order__r.ShipmentId__c)){
+                        for(BOL b : BOLDetails){
+                            if(b.FBANo == child.Order__r.ShipmentId__c){
+                                b.CartonCount += cartons;
+                                b.UnitCount += units;
+                                b.ShipWeight += boxesWeight;
+                                
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        //pass to model
+                        BOLDetails.add( 
+                            new BOL( child.Order__r.OrderNumber__c, child.Order__r.ShipmentId__c, child.Order__r.AmazonRefId__c, 'Box', 
+                                    pallets, cartons, units, boxesWeight, palletWeight, mixed )
+                        );   
+                    }
+                }  
+            }  
+            
+        }
+        //totals
+        for(BOL b : BOLDetails){
+            if(b.PalletCount > 0) TotalPallets += b.PalletCount;
+            if(b.MixedSkid.length() > 0 ) mixedSize.add(b.MixedSkid);
+            if(b.CartonCount > 0) TotalCartons += b.CartonCount;
+            if(b.UnitCount > 0) TotalUnits += b.UnitCount;
+            if(b.PalletWeight > 0 || b.ShipWeight > 0) TotalWeight += (H.D(b.PalletWeight) + H.D(b.ShipWeight));
+        }
+        
+        TotalPallets += mixedSize.size();
+        MixedPOs += mixedSize.size();
+        BOLDetails.sort();
+        
+        //order info
+        Order = [SELECT Id, OrderNumber__c, ShipmentId__c, AmazonRefId__c, BOLTracking__c,
+                 ShipFromStreet__c,ShipFromCity__c,ShipFromStateProvince__c, ShipFromPostalCode__c,
+                 ShipToStreet__c,ShipToCity__c, ShipToStateProvince__c, ShipToPostalCode__c, 
+                 (SELECT Plate__c, TotalContentsQty__c, Weight__c FROM Containers__r ) 
+                 FROM Order__c 
+                 WHERE Id = :orderId];
+    }
+    
+    private Boolean IsInModel(String shipmentId){
+        for(BOL b : BOLDetails){
+            if(b.FBANo == shipmentId){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public class BOL implements Comparable{
+        public String OrderNo{get;set;}
+        public String FBANo{get;set;}
+        public String AmzRefId{get;set;}
+        public String HandlingType{get;set;}
+        public Integer PalletCount{get;set;}
+        public Integer CartonCount{get;set;}
+        public Integer UnitCount{get;set;}
+        public Decimal ShipWeight{get;set;}
+        public Decimal PalletWeight{get;set;}
+        public String MixedSkid{get;set;}
+        
+        public BOL(String order, String fbaNo, String amzRefId, String handling, Integer palletCount, Integer cartonCount, Integer unitCount, Decimal shipWeight, Decimal palletWeight, String mixedSkid ){
+            this.OrderNo = order;
+            this.FBANo = fbaNo;
+            this.AmzRefId = amzRefId;
+            this.HandlingType = handling;
+            this.PalletCount = palletCount;
+            this.CartonCount = cartonCount;
+            this.UnitCount = unitCount;
+            this.ShipWeight = shipWeight;
+            this.PalletWeight = palletWeight;
+            this.MixedSkid = mixedSkid;
+        }
+                
+        public Integer compareTo(Object compareTo) {
+            BOL compareToEmp = (BOL)compareTo;
+            if (MixedSkid == compareToEmp.MixedSkid) return 0;
+            if (MixedSkid > compareToEmp.MixedSkid) return 1;
+            return -1; 
+        }
+    }
+}
